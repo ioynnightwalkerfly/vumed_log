@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Workload Criteria Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 400px; }
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+        .card-shadow:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <!-- 
+        Palette: Vibrant Tech
+        Primary: #3B82F6 (Blue 500)
+        Secondary: #F43F5E (Rose 500)
+        Tertiary: #10B981 (Emerald 500)
+        Accent: #F59E0B (Amber 500)
+        Background: #F3F4F6 (Gray 100)
+    -->
+    <!-- Narrative Plan:
+        1. Intro/KPIs: Define the target workload (35 hrs/week).
+        2. Teaching: Explain the multiplier logic (x3.0) and class size bonuses.
+        3. Research: Show the high rewards for research outputs.
+        4. Admin: Show fixed hours for admin roles.
+        5. Strategy: Summary of how to pass the criteria.
+    -->
+    <!-- NO SVG USED. NO MERMAID JS USED. -->
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 px-4 shadow-lg mb-8">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4">เกณฑ์การประเมินภาระงานผู้สอน</h1>
+            <p class="text-xl md:text-2xl font-light opacity-90">Teacher Workload Assessment Criteria</p>
+            <div class="mt-8 flex justify-center space-x-4">
+                <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-sm">Teaching</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-sm">Research</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-sm">Service</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pb-12 space-y-16">
+
+        <!-- Section 1: The Targets (Inform) -->
+        <section>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-800 mb-3">เป้าหมายภาระงาน (Targets)</h2>
+                <p class="max-w-2xl mx-auto text-gray-600">
+                    อาจารย์ทุกคนมีหน้าที่ต้องสะสม "ชั่วโมงภาระงาน" ให้ครบตามเกณฑ์ที่มหาวิทยาลัยกำหนด โดยไม่ใช่การนับเวลาตามนาฬิกา แต่เป็นการคำนวณจากความยากง่ายของงาน
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-xl p-8 card-shadow text-center border-t-8 border-blue-500">
+                    <h3 class="text-gray-500 font-semibold uppercase tracking-wider mb-2">รายสัปดาห์</h3>
+                    <div class="text-6xl font-extrabold text-blue-600 mb-2">35</div>
+                    <p class="text-gray-400 font-medium">ชั่วโมงภาระงาน</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-white rounded-xl p-8 card-shadow text-center border-t-8 border-emerald-500">
+                    <h3 class="text-gray-500 font-semibold uppercase tracking-wider mb-2">รายภาคการศึกษา</h3>
+                    <div class="text-6xl font-extrabold text-emerald-500 mb-2">525</div>
+                    <p class="text-gray-400 font-medium">ชั่วโมงภาระงาน</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-white rounded-xl p-8 card-shadow text-center border-t-8 border-rose-500">
+                    <h3 class="text-gray-500 font-semibold uppercase tracking-wider mb-2">รายปีการศึกษา</h3>
+                    <div class="text-6xl font-extrabold text-rose-500 mb-2">1,330</div>
+                    <p class="text-gray-400 font-medium">ชั่วโมงภาระงาน</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Teaching Workload (Compare & Change) -->
+        <section class="bg-white rounded-2xl shadow-lg p-8 md:p-12">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-blue-800 mb-4 border-l-4 border-blue-500 pl-4">1. ภาระงานสอน (Teaching)</h2>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    การสอนคือภาระงานหลัก โดยจะมีการคูณ "ตัวคูณ" เข้ากับชั่วโมงสอนจริง ยิ่งระดับการศึกษาสูง หรือจำนวนนักศึกษามาก ตัวคูณก็จะยิ่งเพิ่มขึ้นเพื่อชดเชยภาระงานที่หนักขึ้น
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Chart 1: Multipliers -->
+                <div class="flex flex-col">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4 text-center">ตัวคูณตามประเภทวิชา (Multiplier)</h3>
+                    <div class="chart-container">
+                        <canvas id="teachingMultiplierChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4 text-center italic">
+                        *วิชาบรรยาย ป.ตรี เป็นฐานหลัก (x3.0) ในขณะที่ ป.เอก ได้ตัวคูณสูงสุด (x4.0)
+                    </p>
+                </div>
+
+                <!-- Chart 2: Class Size Bonus -->
+                <div class="flex flex-col">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4 text-center">โบนัสสอนห้องใหญ่ (Class Size Bonus)</h3>
+                    <div class="chart-container">
+                        <canvas id="classSizeChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4 text-center italic">
+                        *เมื่อจำนวนนักศึกษาเกิน 50 คน ตัวคูณจะเริ่มขยับขึ้นจาก 3.0 ไปจนถึงสูงสุด 3.5
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Research Workload (Rank/Organize) -->
+        <section class="bg-white rounded-2xl shadow-lg p-8 md:p-12">
+            <div class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold text-rose-700 mb-4 border-l-4 border-rose-500 pl-4">2. ภาระงานวิจัย (Research)</h2>
+                    <p class="text-gray-600 leading-relaxed max-w-3xl">
+                        งานวิจัยเปรียบเสมือน "Booster" ที่ช่วยเพิ่มชั่วโมงภาระงานได้ครั้งละมากๆ คิดแบบเหมาจ่ายต่อเรื่องหรือต่อเล่ม เหมาะสำหรับการปิดยอดภาระงานรายปี
+                    </p>
+                </div>
+                <div class="mt-4 md:mt-0 bg-rose-100 text-rose-700 px-6 py-3 rounded-lg font-bold text-lg">
+                    High Reward
+                </div>
+            </div>
+
+            <!-- Chart 3: Research Points Menu -->
+            <div class="flex flex-col items-center">
+                <div class="chart-container w-full max-w-4xl h-96">
+                    <canvas id="researchChart"></canvas>
+                </div>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 w-full text-center">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <span class="block text-2xl font-bold text-gray-800">200 ชม.</span>
+                        <span class="text-sm text-gray-500">ตีพิมพ์ระดับนานาชาติ (ISI/Scopus)</span>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <span class="block text-2xl font-bold text-gray-800">300 ชม.</span>
+                        <span class="text-sm text-gray-500">ทุนวิจัยภายนอก (>50k บาท)</span>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <span class="block text-2xl font-bold text-gray-800">300-400 ชม.</span>
+                        <span class="text-sm text-gray-500">เขียนตำรา/หนังสือ</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Administration & Service (Comparison) -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Admin -->
+            <div class="lg:col-span-1 bg-white rounded-2xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-amber-600 mb-4 border-l-4 border-amber-500 pl-4">3. งานบริหาร</h2>
+                <p class="text-gray-600 text-sm mb-6">ผู้บริหารจะได้รับชั่วโมงภาระงานยืนพื้นต่อสัปดาห์ตามตำแหน่ง</p>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="adminChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Academic Service -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-emerald-600 mb-4 border-l-4 border-emerald-500 pl-4">4. งานบริการวิชาการ</h2>
+                <p class="text-gray-600 mb-6">การเป็นผู้เชี่ยวชาญ วิทยากร หรือกรรมการวิชาการ ช่วยเสริมภาระงานได้</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Service Item 1 -->
+                    <div class="flex items-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div class="bg-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl mr-4">?</div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">วิทยากร (ภายนอก)</h4>
+                            <p class="text-sm text-emerald-700">3 ชม.จริง = 5 ชม.ภาระงาน</p>
+                        </div>
+                    </div>
+                    <!-- Service Item 2 -->
+                    <div class="flex items-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div class="bg-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl mr-4">R</div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Reviewer (Eng)</h4>
+                            <p class="text-sm text-emerald-700">20 ชม.ภาระงาน / เรื่อง</p>
+                        </div>
+                    </div>
+                    <!-- Service Item 3 -->
+                    <div class="flex items-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div class="bg-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl mr-4">C</div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">ประธานโครงการประชุม</h4>
+                            <p class="text-sm text-emerald-700">20 - 100 ชม.ภาระงาน</p>
+                        </div>
+                    </div>
+                    <!-- Service Item 4 -->
+                    <div class="flex items-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div class="bg-emerald-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl mr-4">A</div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">ประเมินตำแหน่ง (ศ.)</h4>
+                            <p class="text-sm text-emerald-700">100 ชม.ภาระงาน / คน</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Strategy to Pass (Process/Flow - NO MERMAID) -->
+        <section class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-xl p-8 md:p-12 text-white">
+            <h2 class="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                กลยุทธ์พิชิตเกณฑ์ (Strategy to Success)
+            </h2>
+            
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-8 md:space-y-0 md:space-x-4">
+                
+                <!-- Step 1 -->
+                <div class="flex-1 w-full bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 text-center hover:bg-white/20 transition duration-300">
+                    <div class="text-4xl mb-4">📚</div>
+                    <h3 class="text-xl font-bold text-blue-300 mb-2">1. The Base (งานสอน)</h3>
+                    <p class="text-sm text-gray-300">สร้างฐานให้แน่นด้วยการสอนบรรยาย<br>เน้นสอน ป.ตรี เป็นหลัก (x3.0)</p>
+                </div>
+
+                <!-- Arrow -->
+                <div class="text-3xl text-gray-500 transform rotate-90 md:rotate-0">➔</div>
+
+                <!-- Step 2 -->
+                <div class="flex-1 w-full bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 text-center hover:bg-white/20 transition duration-300">
+                    <div class="text-4xl mb-4">🔬</div>
+                    <h3 class="text-xl font-bold text-rose-300 mb-2">2. The Booster (งานวิจัย)</h3>
+                    <p class="text-sm text-gray-300">เติมเต็มส่วนที่ขาดด้วยการตีพิมพ์<br>1 เรื่อง = งานสอน ~50 ชม.จริง</p>
+                </div>
+
+                <!-- Arrow -->
+                <div class="text-3xl text-gray-500 transform rotate-90 md:rotate-0">➔</div>
+
+                <!-- Step 3 -->
+                <div class="flex-1 w-full bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 text-center hover:bg-white/20 transition duration-300">
+                    <div class="text-4xl mb-4">🤝</div>
+                    <h3 class="text-xl font-bold text-emerald-300 mb-2">3. Support (บริการ)</h3>
+                    <p class="text-sm text-gray-300">เก็บแต้มเสริมจากการเป็นกรรมการ<br>และวิทยากรภายนอก</p>
+                </div>
+
+            </div>
+            
+            <div class="mt-10 text-center">
+                <div class="inline-block bg-green-500 text-white font-bold py-3 px-8 rounded-full shadow-lg animate-bounce">
+                    = ผ่านเกณฑ์ 35 ชม./สัปดาห์
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-8 text-center">
+        <p>สร้างจากข้อมูล: เอกสารเกณฑ์การประเมินภาระงานผู้สอน มหาวิทยาลัยวงษ์ชวลิตกุล</p>
+        <p class="text-sm mt-2">© 2023 Infographic SPA Visualization</p>
+    </footer>
+
+    <!-- JavaScript for Charts -->
+    <script>
+        // --- Configuration ---
+        Chart.defaults.font.family = "'Sarabun', sans-serif";
+        Chart.defaults.color = '#4B5563';
+        
+        // --- Helper Function: Wrap Labels ---
+        function wrapLabel(str, maxLen) {
+            if (str.length <= maxLen) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= maxLen) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        // --- Common Tooltip Config ---
+        const commonTooltip = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        // --- Chart 1: Teaching Multipliers (Bar) ---
+        const ctx1 = document.getElementById('teachingMultiplierChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['ป.ตรี (บรรยาย)', 'ป.ตรี (ปฏิบัติ)', 'ป.โท (บรรยาย)', 'ป.เอก (บรรยาย)'].map(l => wrapLabel(l, 16)),
+                datasets: [{
+                    label: 'ตัวคูณภาระงาน (เท่า)',
+                    data: [3.0, 1.5, 3.5, 4.0],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)', // Blue
+                        'rgba(59, 130, 246, 0.5)',
+                        'rgba(244, 63, 94, 0.8)',  // Rose
+                        'rgba(16, 185, 129, 0.8)'  // Emerald
+                    ],
+                    borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(244, 63, 94, 1)',
+                        'rgba(16, 185, 129, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: commonTooltip
+                },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'ตัวคูณ (Multiplier)' } }
+                }
+            }
+        });
+
+        // --- Chart 2: Class Size Bonus (Line) ---
+        const ctx2 = document.getElementById('classSizeChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['< 50 คน', '51-100 คน', '101-150 คน', '151-200 คน', '> 200 คน'].map(l => wrapLabel(l, 10)),
+                datasets: [{
+                    label: 'ตัวคูณพิเศษ',
+                    data: [3.0, 3.1, 3.2, 3.3, 3.5],
+                    borderColor: '#F59E0B', // Amber
+                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#F59E0B'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: commonTooltip,
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { min: 2.8, max: 3.6, title: { display: true, text: 'ตัวคูณ (Multiplier)' } }
+                }
+            }
+        });
+
+        // --- Chart 3: Research Points (Horizontal Bar) ---
+        const ctx3 = document.getElementById('researchChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            indexAxis: 'y', // Horizontal
+            data: {
+                labels: [
+                    'ตำรา (ภาษาอังกฤษ)', 
+                    'สิทธิบัตร (รับรองแล้ว)', 
+                    'ทุนวิจัยภายนอก (>50k)', 
+                    'ตำรา (ภาษาไทย)', 
+                    'บทความนานาชาติ (ISI)', 
+                    'บทความนานาชาติ (Non-ISI)', 
+                    'บทความ TCI 1', 
+                    'Proceeding นานาชาติ'
+                ].map(l => wrapLabel(l, 25)),
+                datasets: [{
+                    label: 'ชั่วโมงภาระงานที่ได้',
+                    data: [400, 400, 300, 300, 200, 160, 160, 80],
+                    backgroundColor: '#F43F5E', // Rose
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: commonTooltip
+                },
+                scales: {
+                    x: { beginAtZero: true, title: { display: true, text: 'ชั่วโมงภาระงานต่อชิ้น (Workload Hours)' } }
+                }
+            }
+        });
+
+        // --- Chart 4: Admin Roles (Polar Area) ---
+        const ctx4 = document.getElementById('adminChart').getContext('2d');
+        new Chart(ctx4, {
+            type: 'polarArea',
+            data: {
+                labels: ['อธิการบดี', 'คณบดี/ผอ.สำนัก', 'หัวหน้าสาขา'].map(l => wrapLabel(l, 15)),
+                datasets: [{
+                    data: [35, 25, 10],
+                    backgroundColor: [
+                        'rgba(245, 158, 11, 0.7)',  // Amber
+                        'rgba(16, 185, 129, 0.7)', // Emerald
+                        'rgba(59, 130, 246, 0.7)'  // Blue
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: commonTooltip
+                },
+                scales: {
+                    r: { ticks: { backdropColor: 'transparent' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

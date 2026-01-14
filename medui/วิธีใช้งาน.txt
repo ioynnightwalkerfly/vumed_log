@@ -1,0 +1,7 @@
+<link rel="stylesheet" href="medui/medui.css">
+<link rel="stylesheet" href="medui/medui.components.css">
+<link rel="stylesheet" href="medui/medui.layout.css">
+
+<!-- ใส่ธีมไว้ลำดับสุดท้าย -->
+<link rel="stylesheet" href="medui/medui.theme.medical.css">
+<link rel="stylesheet" href="medui/medui.min.css">

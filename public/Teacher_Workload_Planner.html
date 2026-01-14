@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Workload Planner | ระบบวางแผนภาระงานผู้สอน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for tables/lists */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Card Hover Effects */
+        .interactive-card {
+            transition: all 0.3s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <!-- Chosen Palette: Academic Calm (Deep Blue, Teal, Coral) -->
+    <!-- Application Structure Plan: 
+         1. Hero: Displays fixed KPIs (Targets).
+         2. Simulator: Main interactive area. Left col: Inputs (Teaching, Research, Service). Right col: Real-time Feedback (Gauge, Composition).
+         3. Analysis: Explains the math behind the simulator using charts (Multipliers, Research Points).
+         This structure empowers the user to 'play' with the data first, then understand the detailed rules. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <!-- Navigation / Header -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <div class="w-8 h-8 bg-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-lg">W</div>
+                        <h1 class="text-xl font-bold text-slate-800">Workload Planner</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-slate-500 hidden sm:block">เกณฑ์การประเมินภาระงานผู้สอน มหาวิทยาลัยวงษ์ชวลิตกุล</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- 1. INTRO & TARGETS -->
+        <section class="space-y-6">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-slate-900">เป้าหมายภาระงานของคุณ (Your Targets)</h2>
+                <p class="text-lg text-slate-600 mt-2">
+                    อาจารย์ทุกท่านต้องมีภาระงานขั้นต่ำตามเกณฑ์ที่กำหนด โดยภาระงานนี้เกิดจาก "ชั่วโมงปฏิบัติงานจริง" คูณด้วย "ตัวคูณความยากง่าย"
+                </p>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600 interactive-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">รายสัปดาห์</p>
+                            <h3 class="text-4xl font-extrabold text-blue-700 mt-2">35</h3>
+                            <p class="text-sm text-slate-600 mt-1">ชั่วโมงภาระงาน</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">W</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-teal-500 interactive-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">รายภาคการศึกษา</p>
+                            <h3 class="text-4xl font-extrabold text-teal-600 mt-2">525</h3>
+                            <p class="text-sm text-slate-600 mt-1">ชั่วโมงภาระงาน (15 สัปดาห์)</p>
+                        </div>
+                        <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-bold text-xl">S</div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-coral-500 border-rose-500 interactive-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 uppercase tracking-wide">รายปีการศึกษา</p>
+                            <h3 class="text-4xl font-extrabold text-rose-600 mt-2">1,330</h3>
+                            <p class="text-sm text-slate-600 mt-1">ชั่วโมงภาระงาน (38 สัปดาห์)</p>
+                        </div>
+                        <div class="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 font-bold text-xl">Y</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. SIMULATOR DASHBOARD -->
+        <section class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white">🧮 เครื่องมือคำนวณภาระงาน (Workload Simulator)</h2>
+                    <p class="text-blue-200 text-sm">ทดลองใส่ข้อมูลการสอนและงานวิจัยเพื่อดูว่าคุณผ่านเกณฑ์หรือไม่</p>
+                </div>
+                <div class="flex gap-2 text-xs font-semibold">
+                    <span class="px-3 py-1 bg-blue-600 text-white rounded-full">Teaching x3.0+</span>
+                    <span class="px-3 py-1 bg-rose-600 text-white rounded-full">Research Boosters</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+                
+                <!-- LEFT: INPUTS (7 Columns) -->
+                <div class="lg:col-span-7 p-6 space-y-8">
+                    
+                    <!-- Input Group 1: Teaching -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">1</span>
+                            <h3 class="text-lg font-bold text-slate-800">งานสอน (Teaching)</h3>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ระดับ / ประเภทวิชา</label>
+                                    <select id="teachType" class="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border bg-white">
+                                        <option value="3.0">ป.ตรี บรรยาย (x3.0)</option>
+                                        <option value="1.5">ป.ตรี ปฏิบัติ (x1.5)</option>
+                                        <option value="3.5">ป.โท บรรยาย (x3.5)</option>
+                                        <option value="4.0">ป.เอก บรรยาย (x4.0)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">จำนวน นศ. (คน)</label>
+                                    <select id="classSize" class="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border bg-white">
+                                        <option value="0">น้อยกว่า 50 (ปกติ)</option>
+                                        <option value="0.1">51 - 100 (+0.1)</option>
+                                        <option value="0.2">101 - 150 (+0.2)</option>
+                                        <option value="0.3">151 - 200 (+0.3)</option>
+                                        <option value="0.5">มากกว่า 200 (+0.5)</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ชั่วโมงสอนจริง / สัปดาห์</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" id="teachHours" class="flex-1 rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="เช่น 3" min="1">
+                                        <button onclick="addTeaching()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">เพิ่มรายการ</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- List of added teaching -->
+                            <ul id="teachingList" class="space-y-2 text-sm text-slate-600 max-h-32 overflow-y-auto custom-scroll p-1">
+                                <!-- JS will populate -->
+                                <li class="text-slate-400 italic text-center py-2">ยังไม่มีรายการสอน</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Input Group 2: Research -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold">2</span>
+                            <h3 class="text-lg font-bold text-slate-800">งานวิจัย & บริการ (Research & Service)</h3>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+                            <div class="flex flex-col md:flex-row gap-2">
+                                <select id="researchType" class="flex-1 rounded-md border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 p-2 border bg-white">
+                                    <optgroup label="งานวิจัย (เหมาจ่ายต่อเรื่อง)">
+                                        <option value="300">ทุนวิจัยภายนอก >50k (300 ชม.)</option>
+                                        <option value="200">ทุนวิจัยภายนอก <50k (200 ชม.)</option>
+                                        <option value="200">บทความนานาชาติ ISI/Scopus (200 ชม.)</option>
+                                        <option value="160">บทความ TCI 1 (160 ชม.)</option>
+                                        <option value="80">Proceeding นานาชาติ (80 ชม.)</option>
+                                    </optgroup>
+                                    <optgroup label="บริการวิชาการ (ต่อครั้ง/โครงการ)">
+                                        <option value="20">Reviewer Eng (20 ชม.)</option>
+                                        <option value="10">Reviewer ไทย (10 ชม.)</option>
+                                        <option value="15">วิทยากร (3 ชม.จริง = 5 ภาระงาน)</option>
+                                        <option value="20">ประธานโครงการ (20 ชม.)</option>
+                                    </optgroup>
+                                </select>
+                                <button onclick="addResearch()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-md font-medium transition-colors">เพิ่มรายการ</button>
+                            </div>
+                            <!-- List of added research -->
+                            <ul id="researchList" class="space-y-2 text-sm text-slate-600 max-h-32 overflow-y-auto custom-scroll p-1">
+                                <li class="text-slate-400 italic text-center py-2">ยังไม่มีรายการวิจัย/บริการ</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <div class="text-right">
+                        <button onclick="resetData()" class="text-sm text-slate-500 hover:text-red-600 underline">ล้างข้อมูลทั้งหมด</button>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT: OUTPUTS (5 Columns) -->
+                <div class="lg:col-span-5 bg-slate-50 p-6 flex flex-col items-center justify-center space-y-8 sticky top-0">
+                    
+                    <!-- Annual Progress -->
+                    <div class="w-full text-center">
+                        <h4 class="text-sm font-bold text-slate-500 uppercase mb-4">ความคืบหน้ารายปี (Annual Progress)</h4>
+                        <div class="relative w-48 h-48 mx-auto">
+                            <!-- Canvas for Gauge -->
+                            <canvas id="gaugeChart"></canvas>
+                            <!-- Center Text -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span id="totalAnnualHours" class="text-3xl font-extrabold text-slate-800">0</span>
+                                <span class="text-xs text-slate-500">/ 1,330 ชม.</span>
+                            </div>
+                        </div>
+                        <p id="gaugeStatus" class="text-sm font-medium mt-2 text-rose-500">ยังขาดอีก 1,330 ชม.</p>
+                    </div>
+
+                    <!-- Weekly Estimate -->
+                    <div class="w-full bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-semibold text-slate-600">เฉลี่ยต่อสัปดาห์</span>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">เป้าหมาย: 35 ชม.</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="weeklyAvg" class="text-2xl font-bold text-blue-600">0.0</span>
+                            <span class="text-sm text-slate-400">ชม./สัปดาห์</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                            <div id="weeklyBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">*คำนวณจากยอดรวมหารด้วย 38 สัปดาห์</p>
+                    </div>
+
+                    <!-- Composition Chart -->
+                    <div class="w-full h-40">
+                         <div class="chart-container" style="height: 160px; max-width: 100%;">
+                            <canvas id="compositionChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. DEEP DIVE & ANALYSIS -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Teaching Analysis -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-blue-800">ทำไมงานสอนถึงคูณเยอะ?</h3>
+                    <p class="text-sm text-slate-600">
+                        เกณฑ์กำหนดให้ "ชั่วโมงสอนจริง" มีค่ามากกว่า 1 ชั่วโมงภาระงาน เพื่อรวมเวลาเตรียมสอนและออกข้อสอบ ยิ่งคลาสใหญ่หรือระดับสูง ตัวคูณยิ่งมาก
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="teachingMultiplierChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Research Analysis -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-rose-800">เส้นทางสู่ทางลัด (The Research Booster)</h3>
+                    <p class="text-sm text-slate-600">
+                        งานวิจัย 1 ชิ้น อาจมีค่าเท่ากับการสอนทั้งเทอม เปรียบเทียบผลตอบแทน (ROI) ของงานวิจัยแต่ละประเภท
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="researchRoiChart"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 4. RULES SUMMARY (Textual) -->
+        <section class="bg-slate-100 rounded-xl p-8 border border-slate-200">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">สรุปเกณฑ์สำคัญ (Quick Rules)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="font-bold text-blue-700 mb-2">🎓 งานสอน</h4>
+                    <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                        <li>ป.ตรี บรรยาย = x3.0</li>
+                        <li>ป.ตรี ปฏิบัติ = x1.5</li>
+                        <li>นศ. 51-100 คน = x3.1</li>
+                        <li>นศ. >200 คน = x3.5</li>
+                        <li>ป.โท บรรยาย = x3.5</li>
+                        <li>ป.เอก บรรยาย = x4.0</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-rose-700 mb-2">🔬 งานวิจัย</h4>
+                    <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                        <li>บทความนานาชาติ (ISI) = 200 ชม.</li>
+                        <li>บทความ TCI กลุ่ม 1 = 160 ชม.</li>
+                        <li>ทุนวิจัยภายนอก (>50k) = 300 ชม.</li>
+                        <li>ตำรา (ภาษาไทย) = 300 ชม.</li>
+                        <li>สิทธิบัตร = 300-400 ชม.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-teal-700 mb-2">🤝 บริการ/บริหาร</h4>
+                    <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                        <li>อธิการบดี = 35 ชม./สัปดาห์</li>
+                        <li>คณบดี = 25 ชม./สัปดาห์</li>
+                        <li>หัวหน้าสาขา = 10 ชม./สัปดาห์</li>
+                        <li>วิทยากรภายนอก = 5 ชม. (ต่อ 3 ชม.จริง)</li>
+                        <li>Reviewer = 10-20 ชม./เรื่อง</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center mt-12">
+        <p class="text-sm">Based on: เกณฑ์การประเมินภาระงานผู้สอน มหาวิทยาลัยวงษ์ชวลิตกุล</p>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        // --- DATA STATE ---
+        let appState = {
+            teachingItems: [],
+            researchItems: [],
+            totalTeachingHours: 0,
+            totalResearchHours: 0,
+            grandTotal: 0
+        };
+
+        const WEEKS_PER_YEAR_AVG = 30; // Approx weeks of teaching per year (2 semesters x 15)
+        const WEEKS_FOR_CALC = 38; // Denominator for weekly average as per doc
+
+        // --- CHART INSTANCES ---
+        let gaugeChartInstance = null;
+        let compositionChartInstance = null;
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateDashboard();
+        });
+
+        // --- FUNCTIONS ---
+
+        function addTeaching() {
+            const hours = parseFloat(document.getElementById('teachHours').value);
+            if (!hours || hours <= 0) return alert('กรุณาระบุชั่วโมงสอน');
+            
+            const typeSelect = document.getElementById('teachType');
+            const multiplier = parseFloat(typeSelect.value);
+            const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+            
+            const sizeSelect = document.getElementById('classSize');
+            const bonus = parseFloat(sizeSelect.value);
+            const sizeText = sizeSelect.options[sizeSelect.selectedIndex].text;
+
+            // Calculation Logic: (Hours * (Multiplier + Bonus)) * Weeks/Year
+            // Note: Bonus applies to multiplier. e.g. Base 3.0 + Bonus 0.1 = 3.1
+            // Check if bonus applies to this type? Doc implies bonus is mainly for Lecture.
+            // Simplified: Add bonus to multiplier.
+            
+            const finalMultiplier = multiplier + bonus;
+            const workloadPerWeek = hours * finalMultiplier;
+            const totalAnnual = workloadPerWeek * WEEKS_PER_YEAR_AVG; 
+
+            const item = {
+                id: Date.now(),
+                desc: `${typeText} (${hours} ชม./สัปดาห์) [${sizeText}]`,
+                annualValue: totalAnnual,
+                weeklyValue: workloadPerWeek,
+                type: 'teaching'
+            };
+
+            appState.teachingItems.push(item);
+            document.getElementById('teachHours').value = ''; // Reset input
+            renderLists();
+            updateDashboard();
+        }
+
+        function addResearch() {
+            const select = document.getElementById('researchType');
+            const points = parseInt(select.value);
+            const text = select.options[select.selectedIndex].text;
+
+            const item = {
+                id: Date.now(),
+                desc: text,
+                annualValue: points,
+                weeklyValue: 0, // Research is lump sum usually
+                type: 'research'
+            };
+
+            appState.researchItems.push(item);
+            renderLists();
+            updateDashboard();
+        }
+
+        function renderLists() {
+            // Teaching List
+            const tList = document.getElementById('teachingList');
+            if (appState.teachingItems.length === 0) {
+                tList.innerHTML = '<li class="text-slate-400 italic text-center py-2">ยังไม่มีรายการสอน</li>';
+            } else {
+                tList.innerHTML = appState.teachingItems.map(item => `
+                    <li class="flex justify-between items-center bg-white p-2 rounded border border-slate-100 shadow-sm animate-fade-in">
+                        <span>${item.desc}</span>
+                        <span class="font-bold text-blue-600">+${Math.round(item.annualValue)} ชม./ปี</span>
+                        <button onclick="removeItem(${item.id}, 'teaching')" class="text-red-400 hover:text-red-600 ml-2">×</button>
+                    </li>
+                `).join('');
+            }
+
+            // Research List
+            const rList = document.getElementById('researchList');
+            if (appState.researchItems.length === 0) {
+                rList.innerHTML = '<li class="text-slate-400 italic text-center py-2">ยังไม่มีรายการวิจัย/บริการ</li>';
+            } else {
+                rList.innerHTML = appState.researchItems.map(item => `
+                    <li class="flex justify-between items-center bg-white p-2 rounded border border-slate-100 shadow-sm animate-fade-in">
+                        <span>${item.desc}</span>
+                        <span class="font-bold text-rose-600">+${item.annualValue} ชม.</span>
+                        <button onclick="removeItem(${item.id}, 'research')" class="text-red-400 hover:text-red-600 ml-2">×</button>
+                    </li>
+                `).join('');
+            }
+        }
+
+        function removeItem(id, type) {
+            if (type === 'teaching') {
+                appState.teachingItems = appState.teachingItems.filter(i => i.id !== id);
+            } else {
+                appState.researchItems = appState.researchItems.filter(i => i.id !== id);
+            }
+            renderLists();
+            updateDashboard();
+        }
+
+        function resetData() {
+            appState.teachingItems = [];
+            appState.researchItems = [];
+            renderLists();
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            // Calculate Totals
+            appState.totalTeachingHours = appState.teachingItems.reduce((acc, curr) => acc + curr.annualValue, 0);
+            appState.totalResearchHours = appState.researchItems.reduce((acc, curr) => acc + curr.annualValue, 0);
+            appState.grandTotal = appState.totalTeachingHours + appState.totalResearchHours;
+
+            // Update Text
+            document.getElementById('totalAnnualHours').innerText = Math.round(appState.grandTotal).toLocaleString();
+            
+            // Weekly Avg
+            const weeklyAvg = appState.grandTotal / WEEKS_FOR_CALC;
+            document.getElementById('weeklyAvg').innerText = weeklyAvg.toFixed(1);
+            
+            // Weekly Bar width (capped at 100%)
+            const pct = Math.min((weeklyAvg / 35) * 100, 100);
+            const bar = document.getElementById('weeklyBar');
+            bar.style.width = `${pct}%`;
+            bar.className = `h-2.5 rounded-full ${pct >= 100 ? 'bg-emerald-500' : 'bg-blue-600'}`;
+
+            // Gauge Status Text
+            const diff = 1330 - appState.grandTotal;
+            const statusEl = document.getElementById('gaugeStatus');
+            if (diff <= 0) {
+                statusEl.innerText = "🎉 ผ่านเกณฑ์ขั้นต่ำแล้ว!";
+                statusEl.className = "text-sm font-medium mt-2 text-emerald-600";
+            } else {
+                statusEl.innerText = `ยังขาดอีก ${Math.round(diff).toLocaleString()} ชม.`;
+                statusEl.className = "text-sm font-medium mt-2 text-rose-500";
+            }
+
+            // Update Charts
+            updateCharts();
+        }
+
+        // --- CHARTS CONFIG ---
+
+        function initCharts() {
+            // 1. Gauge Chart (Doughnut)
+            const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
+            gaugeChartInstance = new Chart(ctxGauge, {
+                type: 'doughnut',
+                data: {
+                    labels: ['สะสมแล้ว', 'ที่เหลือ'],
+                    datasets: [{
+                        data: [0, 1330],
+                        backgroundColor: ['#2563eb', '#e2e8f0'], // Blue, Slate-200
+                        borderWidth: 0,
+                        circumference: 360,
+                        cutout: '80%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    animation: { duration: 1000 }
+                }
+            });
+
+            // 2. Composition Chart (Pie)
+            const ctxComp = document.getElementById('compositionChart').getContext('2d');
+            compositionChartInstance = new Chart(ctxComp, {
+                type: 'pie',
+                data: {
+                    labels: ['Teaching', 'Research/Service'],
+                    datasets: [{
+                        data: [0, 0], // Init 0
+                        backgroundColor: ['#3b82f6', '#f43f5e']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'right', labels: { boxWidth: 12, font: {size: 10} } } 
+                    }
+                }
+            });
+
+            // 3. Teaching Multiplier Chart (Static)
+            const ctxTeach = document.getElementById('teachingMultiplierChart').getContext('2d');
+            new Chart(ctxTeach, {
+                type: 'bar',
+                data: {
+                    labels: ['ปฏิบัติ ป.ตรี', 'บรรยาย ป.ตรี', 'บรรยาย+นศ.100', 'บรรยาย ป.เอก'],
+                    datasets: [{
+                        label: 'ตัวคูณ (Multiplier)',
+                        data: [1.5, 3.0, 3.1, 4.0],
+                        backgroundColor: ['#94a3b8', '#3b82f6', '#2563eb', '#1e40af'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 5 } }
+                }
+            });
+
+            // 4. Research ROI Chart (Static)
+            const ctxRes = document.getElementById('researchRoiChart').getContext('2d');
+            
+            // Wrap labels helper
+            const labels = ['Proceeding', 'บทความ TCI 1', 'บทความ Inter', 'ทุนวิจัย >50k', 'ตำรา/สิทธิบัตร'];
+            
+            new Chart(ctxRes, {
+                type: 'bar',
+                indexAxis: 'y',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ชั่วโมงภาระงานที่ได้',
+                        data: [80, 160, 200, 300, 350],
+                        backgroundColor: ['#fda4af', '#f43f5e', '#e11d48', '#be123c', '#881337'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function updateCharts() {
+            // Update Gauge
+            const current = appState.grandTotal;
+            const remaining = Math.max(0, 1330 - current);
+            
+            gaugeChartInstance.data.datasets[0].data = [current, remaining];
+            gaugeChartInstance.data.datasets[0].backgroundColor = [
+                current >= 1330 ? '#10b981' : '#2563eb', // Green if done, else Blue
+                '#e2e8f0'
+            ];
+            gaugeChartInstance.update();
+
+            // Update Composition
+            // Handle empty state visualization
+            if (appState.totalTeachingHours === 0 && appState.totalResearchHours === 0) {
+                compositionChartInstance.data.datasets[0].data = [1, 0]; // Dummy
+                compositionChartInstance.data.datasets[0].backgroundColor = ['#f1f5f9', '#f1f5f9'];
+            } else {
+                compositionChartInstance.data.datasets[0].data = [appState.totalTeachingHours, appState.totalResearchHours];
+                compositionChartInstance.data.datasets[0].backgroundColor = ['#3b82f6', '#f43f5e'];
+            }
+            compositionChartInstance.update();
+        }
+
+    </script>
+</body>
+</html>

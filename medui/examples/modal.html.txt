@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Modal Example | MedUI Demo</title>
+
+    <!-- MedUI CSS -->
+    <link rel="stylesheet" href="../medui/medui.css">
+    <link rel="stylesheet" href="../medui/medui.components.css">
+    <link rel="stylesheet" href="../medui/medui.layout.css">
+    <link rel="stylesheet" href="../medui/medui.theme.medical.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">MedUI System</div>
+        <nav class="nav">
+            <a href="dashboard.html"><i class="bi bi-speedometer2"></i> <span class="text">Dashboard</span></a>
+            <a href="form.html"><i class="bi bi-ui-checks"></i> <span class="text">Form</span></a>
+            <a href="#" class="active"><i class="bi bi-window"></i> <span class="text">Modal</span></a>
+        </nav>
+    </aside>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="left"><h3 style="margin:0;">ตัวอย่าง Modal (Popup)</h3></div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <div class="card" style="max-width:500px;margin:auto;text-align:center;">
+            <h2>Modal Demo</h2>
+            <p class="muted">กดปุ่มด้านล่างเพื่อเปิดป็อปอัพ</p>
+            <button class="btn btn-primary" id="openModal">เปิด Modal</button>
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- ✅ MODAL (ไม่ซ่อนด้วย display:none แต่ใช้ .show) -->
+<div class="modal" id="demoModal">
+    <div class="modal-content">
+        <span class="close" id="closeModal">✕</span>
+
+        <h3 style="margin-bottom:10px;">ยืนยันการทำงาน</h3>
+        <p class="muted" style="margin-bottom:20px;">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+
+        <div class="stack-between">
+            <button class="btn btn-muted" id="closeModal2">ยกเลิก</button>
+            <button class="btn btn-danger">ลบข้อมูล</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ✅ JS ควบคุม Modal -->
+<script>
+    const modal = document.getElementById("demoModal");
+    document.getElementById("openModal").onclick = () => modal.classList.add("show");
+    document.getElementById("closeModal").onclick = () => modal.classList.remove("show");
+    document.getElementById("closeModal2").onclick = () => modal.classList.remove("show");
+    modal.onclick = e => { if(e.target === modal) modal.classList.remove("show") }; // ปิดเมื่อคลิกฉากหลัง
+</script>
+
+</body>
+</html>

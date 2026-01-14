@@ -1,0 +1,101 @@
+/* ==========================================================================
+   MedUI v1 – Medical Theme
+   ใช้แทนโทนสีพื้นฐาน รองรับระบบโรงพยาบาล / คณะแพทย์
+   สามารถ override ตัวแปรจาก medui.css ได้โดยไม่ต้องแก้ core
+   ========================================================================== */
+
+:root{
+  /* Main palette */
+  --primary:        #0f3d6e;  /* Navy Hospital Blue */
+  --primary-600:    #0c3159;
+
+  --accent:         #2aa5d6;  /* Medical Cyan Blue */
+  --accent-600:     #218bb5;
+
+  /* Base background */
+  --bg:             #f5f7fb;
+  --surface:        #ffffff;
+  --surface-2:      #f8fafc;
+
+  /* Text colors */
+  --text:           #1f2937;
+  --muted:          #6b7280;
+
+  /* State colors */
+  --success:        #16a34a;
+  --warning:        #f59e0b;
+  --danger:         #ef4444;
+  --info:           #0ea5e9;
+
+  /* Radius & Shadow remain the same */
+  --radius:         16px;
+  --shadow:         0 10px 24px rgba(15,61,110,0.08);
+}
+
+/* Sidebar gradient */
+.sidebar{
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-600) 100%);
+}
+
+/* KPI card numbers use theme primary */
+.kpi-card .kpi{
+  color: var(--primary);
+}
+
+/* Accent button styling */
+.btn-primary{
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover{
+  background: var(--accent-600);
+}
+
+/* Outline button */
+.btn-outline{
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.btn-outline:hover{
+  background: var(--accent);
+  color: #fff;
+}
+
+
+.alert-container {
+  max-width: 900px;
+  margin: 0 auto 10px auto;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.alert.success {
+  background: #e7f8ed;
+  color: #137b2f;
+}
+
+.alert.error {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.alert i {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+.alert .close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: inherit;
+  cursor: pointer;
+}

@@ -1,0 +1,251 @@
+/* ==========================================================================
+   MedUI v1 – Core (Reset + Variables + Utilities)
+   Author: tiw & ChatGPT
+   Scope: Base styles only (Components/Layouts/Themes แยกไฟล์)
+   NOTE: ไม่ใช้ prefix (คลาสทั่วไป เช่น .btn, .card ให้ประกาศใน medui.components.css)
+   ========================================================================== */
+
+/* 1) Modern CSS Reset (แบบเบา ๆ) ---------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+:where(html, body) { height: 100%; }
+:where(body) { margin: 0; }
+:where(img, svg, video, canvas) { display: block; max-width: 100%; }
+:where(button, input, select, textarea) { font: inherit; color: inherit; }
+:where(a) { color: inherit; text-decoration: none; }
+:where(ul, ol) { margin: 0; padding: 0; list-style: none; }
+:where(table) { border-collapse: collapse; border-spacing: 0; width: 100%; }
+
+/* 2) Font & Typography ---------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
+:root{
+  /* Palette — Medical */
+  --primary:        #0f3d6e;   /* Navy Hospital Blue */
+  --primary-600:    #0c3159;
+  --accent:         #2aa5d6;   /* Medical Blue */
+  --accent-600:     #218bb5;
+
+  --bg:             #f5f7fb;
+  --surface:        #ffffff;
+  --surface-2:      #f8fafc;
+
+  --text:           #1f2937;
+  --muted:          #6b7280;
+
+  /* Feedback */
+  --success:        #16a34a;
+  --warning:        #f59e0b;
+  --danger:         #ef4444;
+  --info:           #0ea5e9;
+
+  /* Radius & Shadow */
+  --radius:         16px;
+  --radius-sm:      12px;
+  --radius-lg:      20px;
+  --shadow:         0 10px 24px rgba(15,61,110,0.08);
+  --shadow-sm:      0 6px 14px rgba(15,61,110,0.06);
+
+  /* Spacing scale (t-shirt sizing) */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Container width */
+  --container: 1200px;
+
+  /* Typography scale */
+  --fz-12: 12px;
+  --fz-14: 14px;
+  --fz-16: 16px;
+  --fz-18: 18px;
+  --fz-20: 20px;
+  --fz-24: 24px;
+  --fz-28: 28px;
+  --fz-32: 32px;
+}
+
+body{
+  font-family: 'Noto Sans Thai', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--fz-16);
+  line-height: 1.6;
+}
+
+/* Headings — น้ำหนักสุภาพ อ่านง่าย */
+h1, h2, h3, h4, h5, h6{
+  margin: 0 0 var(--space-3);
+  font-weight: 700;
+  line-height: 1.25;
+}
+h1{ font-size: clamp(28px, 3.2vw, 34px); }
+h2{ font-size: clamp(22px, 2.4vw, 28px); }
+h3{ font-size: clamp(18px, 2.0vw, 22px); }
+
+/* Paragraph & small text */
+p{ margin: 0 0 var(--space-4); }
+small, .text-sm{ font-size: var(--fz-14); color: var(--muted); }
+
+/* 3) Container & Sections ------------------------------------------------- */
+.container{
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* 4) Simple Grid & Stack Utilities -------------------------------------- */
+.grid{
+  display: grid;
+  gap: var(--space-4);
+}
+.grid-2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.grid-3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+.grid-4{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+@media (max-width: 960px){
+  .grid-4{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 600px){
+  .grid-2, .grid-3, .grid-4{ grid-template-columns: 1fr; }
+}
+
+.stack{
+  display:flex; align-items:center; gap:var(--space-3);
+}
+.stack-between{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);
+}
+
+/* 5) Surface / Card base ------------------------------------------------- */
+/* หมายเหตุ: ตัวคอมโพเนนต์ .card จะอยู่ใน medui.components.css
+   ที่นี่เป็น “surface base” ให้หน้าอื่นใช้ต่อ */
+.surface{
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid #0f3d6e12;
+  box-shadow: var(--shadow);
+}
+
+/* 6) Forms Base (โครงพื้นฐานเท่านั้น) --------------------------------- */
+label{ display:block; font-weight:600; margin-bottom: var(--space-2); }
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="file"],
+textarea,
+select{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: var(--fz-14);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+textarea{ min-height: 110px; resize: vertical; }
+input:focus, textarea:focus, select:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px #2aa5d620;
+}
+.input-help{ font-size: var(--fz-12); color: var(--muted); margin-top: 4px; }
+
+/* 7) Links & Muted text -------------------------------------------------- */
+a.link{
+  color: var(--accent);
+}
+a.link:hover{
+  color: var(--accent-600);
+  text-decoration: underline;
+}
+.muted{ color: var(--muted); }
+
+/* 8) Utility Spacing ----------------------------------------------------- */
+.mt-0{ margin-top: 0 !important; }
+.mt-1{ margin-top: var(--space-1) !important; }
+.mt-2{ margin-top: var(--space-2) !important; }
+.mt-3{ margin-top: var(--space-3) !important; }
+.mt-4{ margin-top: var(--space-4) !important; }
+.mt-6{ margin-top: var(--space-6) !important; }
+
+.mb-0{ margin-bottom: 0 !important; }
+.mb-2{ margin-bottom: var(--space-2) !important; }
+.mb-3{ margin-bottom: var(--space-3) !important; }
+.mb-4{ margin-bottom: var(--space-4) !important; }
+.mb-6{ margin-bottom: var(--space-6) !important; }
+.mb-8{ margin-bottom: var(--space-8) !important; }
+
+.pt-4{ padding-top: var(--space-4) !important; }
+.pb-4{ padding-bottom: var(--space-4) !important; }
+.px-4{ padding-left: var(--space-4) !important; padding-right: var(--space-4) !important; }
+.p-4 { padding: var(--space-4) !important; }
+.p-6 { padding: var(--space-6) !important; }
+
+/* 9) Width / Display / Text utilities ----------------------------------- */
+.w-100{ width: 100% !important; }
+.max-w-sm{ max-width: 520px; }
+.inline{ display: inline !important; }
+.inline-block{ display: inline-block !important; }
+.block{ display: block !important; }
+.hidden{ display: none !important; }
+.text-center{ text-align:center !important; }
+.text-right{ text-align:right !important; }
+.nowrap{ white-space: nowrap !important; }
+
+/* 10) Color helpers ------------------------------------------------------ */
+.bg-surface{ background: var(--surface) !important; }
+.bg-muted{ background: #f1f5f9 !important; }
+.text-primary{ color: var(--primary) !important; }
+.text-accent{ color: var(--accent) !important; }
+.text-success{ color: var(--success) !important; }
+.text-danger{ color: var(--danger) !important; }
+.text-warning{ color: var(--warning) !important; }
+.text-info{ color: var(--info) !important; }
+
+/* 11) Border & Radius helpers ------------------------------------------- */
+.rounded{ border-radius: var(--radius) !important; }
+.rounded-sm{ border-radius: var(--radius-sm) !important; }
+.rounded-lg{ border-radius: var(--radius-lg) !important; }
+.border{ border: 1px solid #e5e7eb !important; }
+.border-0{ border: 0 !important; }
+
+/* 12) Shadows ------------------------------------------------------------ */
+.shadow{ box-shadow: var(--shadow) !important; }
+.shadow-sm{ box-shadow: var(--shadow-sm) !important; }
+
+/* 13) App Shell primitives (ไว้ใช้ร่วมกับ layout.css) ------------------ */
+.app{
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 64px calc(100dvh - 64px);
+}
+.main{
+  grid-column: 2;
+  grid-row: 2;
+  padding: var(--space-6);
+  overflow: auto;
+}
+
+/* 14) Responsive tweaks -------------------------------------------------- */
+@media (max-width: 1024px){
+  .app{ grid-template-columns: 72px 1fr; }
+}
+@media (max-width: 768px){
+  .container{ padding-inline: var(--space-3); }
+  .main{ padding: var(--space-4); }
+}
+
+/* 15) Print basics ------------------------------------------------------- */
+@media print{
+  .shadow, .shadow-sm{ box-shadow: none !important; }
+  .bg-surface{ background: #fff !important; }
+}
