@@ -14,9 +14,10 @@ if ($user['role'] !== 'staff') {
     exit;
 }
 
-// 3. รับค่า Area และ Term
-$area = $_GET['area'] ?? 0;
-$term_id = $_GET['term_id'] ?? 1;
+// 3. รับค่าจาก URL (ปรับให้รองรับชื่อตัวแปรใหม่จากหน้า Select)
+$area = $_GET['category_id'] ?? $_GET['area'] ?? 0; // รับทั้ง category_id และ area เพื่อความชัวร์
+$term_id = $_GET['term_id'] ?? 3; // Default เป็น 3 (ตลอดปี)
+$academic_year = $_GET['academic_year'] ?? (date('Y')+543); // รับปีงบประมาณ
 
 // ถ้ายังไม่เลือกด้าน ให้เด้งกลับไปหน้าเลือก
 if (!$area) {
@@ -30,7 +31,7 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf_token = $_SESSION['csrf_token'];
 
-// ชื่อด้าน (Mapping ตามไฟล์ที่คุณส่งมา)
+// ชื่อด้าน (Mapping)
 $areaNames = [
     1 => "ภาระงานหลัก / งานประจำ (Routine)",
     2 => "งานพัฒนางาน (Development)",
@@ -93,6 +94,7 @@ $currentAreaName = $areaNames[$area] ?? 'ไม่ทราบด้าน';
                         <p class="muted" style="margin:5px 0 0; font-size:1.1rem;">
                             <span class="badge bg-light text-dark" style="font-size:1rem;">สายสนับสนุน</span>
                             <span class="text-primary font-bold"><?= htmlspecialchars($currentAreaName) ?></span>
+                            <span class="badge bg-purple text-white ml-2" style="background-color:#6366f1;">ปีงบประมาณ <?= $academic_year ?></span>
                         </p>
                     </div>
                     <div class="topbar-right">
@@ -110,7 +112,7 @@ $currentAreaName = $areaNames[$area] ?? 'ไม่ทราบด้าน';
                 <?php include '../inc/alert.php'; ?>
 
                 <?php
-                //  ใช้ Switch Case ตามที่คุณระบุ
+                //  ใช้ Switch Case เดิม
                 switch ($area) {
                     case 1: include '../forms/staff/form_staff_routine.php'; break;
                     case 2: include '../forms/staff/form_staff_development.php'; break;

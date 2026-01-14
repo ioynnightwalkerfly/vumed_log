@@ -26,7 +26,7 @@ function isActive($pageName) {
   <nav class="nav sidebar-nav">
     <ul>
         
-         <?php if ($userRole === 'staff'): ?>
+        <?php if ($userRole === 'staff'): ?>
             <li>
                 <a href="staff_index.php" class="<?= isActive('staff_index.php') ?>">
                     <i class="bi bi-house-door-fill"></i><span class="text">หน้าหลัก (สนับสนุน)</span>
@@ -40,6 +40,14 @@ function isActive($pageName) {
             <li>
                 <a href="staff_stats.php" target="_blank">
                     <i class="bi bi-printer"></i><span class="text">รายงานสรุป</span>
+                </a>
+            </li>
+
+        <?php elseif ($userRole === 'staff_lead'): ?>
+            <li class="menu-header">ส่วนหัวหน้างาน</li>
+            <li>
+                <a href="review_staff.php" class="<?= isActive('review_staff.php') ?>">
+                    <i class="bi bi-check-square"></i><span class="text">ตรวจภาระงาน (Staff)</span>
                 </a>
             </li>
 
@@ -64,7 +72,6 @@ function isActive($pageName) {
 
         <?php if ($userRole === 'admin' || $userRole === 'manager'): ?>
             <li class="menu-header">ส่วนการบริหาร</li>
-            
             <li>
                 <a href="admin_dashboard.php" class="<?= isActive(['admin_dashboard.php', 'admin_user_stats.php']) ?>">
                     <i class="bi bi-speedometer2"></i><span class="text">แดชบอร์ดบริหาร</span>
@@ -104,16 +111,6 @@ function isActive($pageName) {
                 </a>
             </li>
         <?php endif; ?>
-
-        <?php if ($userRole === 'staff_lead'): ?>
-            <li class="menu-header">ส่วนหัวหน้างาน</li>
-            <li>
-                <a href="review_staff.php" class="<?= isActive('review_staff.php') ?>">
-                    <i class="bi bi-check-square"></i><span class="text">ตรวจภาระงาน (Staff)</span>
-                </a>
-            </li>
-        <?php endif; ?>
-
 
         <li style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px;">
             <a href="profile.php" class="<?= isActive('profile.php') ?>">

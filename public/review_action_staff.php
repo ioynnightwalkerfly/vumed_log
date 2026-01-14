@@ -1,66 +1,59 @@
 <?php
 // public/review_action_staff.php
 require_once '../config/app.php';
-require_once '../middleware/require_staff_lead.php'; // เช็คสิทธิ์ Staff Lead
+require_once '../middleware/require_login.php';
 require_once '../config/db.php';
 
-// ตรวจสอบ Request Method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: review_staff.php");
+// รับค่าจาก Form
+$action = $_POST['action'] ?? '';
+$id = $_POST['id'] ?? ''; 
+$comment = $_POST['comment'] ?? '';
+
+if (!$id || !$action) {
+    header("Location: review_staff.php?error=InvalidRequest");
     exit;
 }
 
-// ตรวจสอบ CSRF Token (เพื่อความปลอดภัย)
-if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-    die("Invalid CSRF token.");
-}
+$conn->begin_transaction();
 
-$workload_id = $_POST['workload_id'] ?? 0;
-$action      = $_POST['action'] ?? '';
-$comment     = trim($_POST['comment'] ?? '');
+try {
+    // กรณี "ผ่านการตรวจสอบ" -> เปลี่ยนเป็น approved_admin
+    if ($action == 'verify') {
+        $sql = "UPDATE workload_items SET status = 'approved_admin', updated_at = NOW() WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
 
-// โหลดข้อมูลเดิม
-$stmt = $conn->prepare("SELECT status FROM workload_items WHERE id = ?");
-$stmt->bind_param("i", $workload_id);
-$stmt->execute();
-$item = $stmt->get_result()->fetch_assoc();
-
-if (!$item || $item['status'] !== 'pending') {
-    header("Location: review_staff.php?error=รายการไม่ถูกต้องหรือถูกดำเนินการไปแล้ว");
-    exit;
-}
-
-// ดำเนินการ (Verify หรือ Reject)
-if ($action === 'verify') {
-    // เปลี่ยนสถานะเป็น 'verified' (ส่งต่อ Manager)
-    $stmt = $conn->prepare("UPDATE workload_items SET status = 'verified', updated_at = NOW() WHERE id = ?");
-    $stmt->bind_param("i", $workload_id);
-    
-    if ($stmt->execute()) {
         // Log
-        $stmtLog = $conn->prepare("INSERT INTO workload_logs (work_log_id, user_id, action, comment, created_at) VALUES (?, ?, 'verify', 'Staff Lead Verified', NOW())");
-        $stmtLog->bind_param("ii", $workload_id, $user['id']);
+        $logSql = "INSERT INTO workload_logs (work_log_id, user_id, action, comment) VALUES (?, ?, 'approved_admin', 'ผ่านการตรวจสอบโดย Staff Lead')";
+        $stmtLog = $conn->prepare($logSql);
+        $stmtLog->bind_param("ii", $id, $user['id']);
         $stmtLog->execute();
         
-        header("Location: review_staff.php?success=ตรวจสอบเรียบร้อยแล้ว (ส่งต่อผู้บริหาร)");
-    } else {
-        header("Location: review_staff.php?error=Database Error");
+        $msg = "บันทึกผลการตรวจสอบเรียบร้อย";
+        $redirectTab = "approved"; // ส่งไปหน้าตรวจแล้ว
+    }
+    // กรณี "ส่งคืน"
+    elseif ($action == 'reject') {
+        $sql = "UPDATE workload_items SET status = 'rejected', reject_reason = ?, updated_at = NOW() WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("si", $comment, $id);
+        $stmt->execute();
+
+        // Log
+        $logSql = "INSERT INTO workload_logs (work_log_id, user_id, action, comment) VALUES (?, ?, 'rejected', ?)";
+        $stmtLog = $conn->prepare($logSql);
+        $stmtLog->bind_param("iis", $id, $user['id'], $comment);
+        $stmtLog->execute();
+
+        $msg = "ส่งคืนแก้ไขเรียบร้อย";
+        $redirectTab = "rejected";
     }
 
-} elseif ($action === 'reject') {
-    // เปลี่ยนสถานะเป็น 'rejected' (ส่งคืนแก้ไข)
-    $stmt = $conn->prepare("UPDATE workload_items SET status = 'rejected', reject_reason = ?, updated_at = NOW() WHERE id = ?");
-    $stmt->bind_param("si", $comment, $workload_id);
-    
-    if ($stmt->execute()) {
-        // Log
-        $stmtLog = $conn->prepare("INSERT INTO workload_logs (work_log_id, user_id, action, comment, created_at) VALUES (?, ?, 'reject', ?, NOW())");
-        $stmtLog->bind_param("iis", $workload_id, $user['id'], $comment);
-        $stmtLog->execute();
-        
-        header("Location: review_staff.php?success=ส่งคืนรายการเรียบร้อยแล้ว");
-    } else {
-        header("Location: review_staff.php?error=Database Error");
-    }
+    $conn->commit();
+    header("Location: review_staff.php?status=$redirectTab&success=" . urlencode($msg));
+
+} catch (Exception $e) {
+    $conn->rollback();
+    header("Location: review_staff.php?error=" . urlencode("Database Error: " . $e->getMessage()));
 }
-?>

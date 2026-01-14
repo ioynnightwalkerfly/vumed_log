@@ -1,6 +1,5 @@
 <?php
 // public/workload_view.php
-// ปรับปรุง: แก้ไข Error ตัวแปร $workload และ Timeline
 
 require_once '../config/app.php';
 require_once '../middleware/require_login.php';
@@ -42,7 +41,7 @@ if (!$item) {
     exit;
 }
 
-// 2. ดึง Timeline และแยกประเภท
+// 2. ดึง Timeline
 $stmtLog = $conn->prepare("
     SELECT wl.*, u.name AS reviewer_name, u.role AS reviewer_role
     FROM workload_logs wl
@@ -54,12 +53,11 @@ $stmtLog->bind_param("i", $id);
 $stmtLog->execute();
 $allLogs = $stmtLog->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// แยก Log เป็น 2 กอง
 $reviewLogs = [];
 $editLogs   = [];
 
 foreach ($allLogs as $log) {
-    if (in_array($log['action'], ['approve', 'approve_final', 'reject'])) {
+    if (in_array($log['action'], ['approve', 'approve_final', 'reject', 'verified', 'approved_admin', 'rejected'])) {
         $reviewLogs[] = $log;
     } else {
         $editLogs[] = $log;
@@ -76,7 +74,7 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>รายละเอียดภาระงาน | MedUI System</title>
+  <title>รายละเอียดภาระงาน</title>
   <link rel="stylesheet" href="../medui/medui.css">
   <link rel="stylesheet" href="../medui/medui.components.css">
   <link rel="stylesheet" href="../medui/medui.layout.css">
@@ -93,18 +91,12 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
     .reject-box { background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 16px; border-radius: 8px; margin-bottom: 24px; }
     .reject-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 
-    /* Timeline Style */
     .timeline { margin-top: 20px; padding-top: 10px; }
-    .timeline-header { font-size: 1.1rem; font-weight: bold; color: #374151; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
     .timeline-item { position: relative; padding-left: 30px; margin-bottom: 20px; }
     .timeline-item::before {
         content: ""; position: absolute; left: 8px; top: 6px;
         width: 12px; height: 12px; background: #ddd; border-radius: 50%;
         border: 2px solid #fff; box-shadow: 0 0 0 2px #ddd;
-    }
-    .timeline-item:not(:last-child)::after {
-        content: ""; position: absolute; left: 13px; top: 20px;
-        width: 2px; height: calc(100% + 10px); background: #eee;
     }
     .timeline-date { font-size: 0.85rem; color: #888; margin-bottom: 4px; }
     .timeline-content { font-size: 1rem; color: #333; }
@@ -113,9 +105,16 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
         border-radius: 6px; border-left: 3px solid var(--primary);
         font-size: 0.9rem; color: #555;
     }
-    
-    .badge-clickable { cursor: pointer; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-    .badge-clickable:hover { transform: scale(1.05); opacity: 0.9; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .badge-clickable { cursor: pointer; }
+
+    /* [แก้ไข] เพิ่ม CSS นี้เพื่อให้ข้อความตัดบรรทัดเมื่อยาวเกิน */
+    .text-break {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word;
+        white-space: pre-wrap;
+        max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -141,8 +140,8 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
             <div class="reject-title">
                 <i class="bi bi-exclamation-triangle-fill"></i> รายการนี้ถูกปฏิเสธ / ส่งกลับแก้ไข
             </div>
-            <div style="padding-left: 28px;">
-                <?= nl2br(htmlspecialchars($item['last_reject_comment'] ?? '-')) ?>
+            <div class="text-break" style="padding-left: 28px; width: 100%;">
+                <?= nl2br(htmlspecialchars($item['reject_reason'] ?? '-')) ?>
             </div>
         </div>
       <?php endif; ?>
@@ -158,20 +157,6 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
         </div>
       </div>
 
-      <?php if (!empty($item['start_date'])): ?>
-      <div class="detail-grid">
-        <div class="detail-label">วันที่ดำเนินงาน</div>
-        <div class="detail-value">
-            <?php 
-                echo date('d/m/Y', strtotime($item['start_date'])); 
-                if (!empty($item['end_date'])) {
-                    echo " - " . date('d/m/Y', strtotime($item['end_date'])); 
-                }
-            ?>
-        </div>
-      </div>
-      <?php endif; ?>
-      
       <div class="detail-grid">
         <div class="detail-label">สถานะ</div>
         <div class="detail-value">
@@ -181,12 +166,12 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
              </span>
           <?php else: ?>
              <span class="badge 
-               <?= ($item['status']=='approved_final')?'approved':
-                  (($item['status']=='approved_admin')?'info':
+               <?= ($item['status']=='approved' || $item['status']=='approved_final')?'approved':
+                  (($item['status']=='approved_admin' || $item['status']=='verified')?'info':
                   (($item['status']=='draft')?'draft':'pending')); ?>">
                <?php
-                 if ($item['status']=='approved_final') echo 'อนุมัติแล้ว';
-                 elseif ($item['status']=='approved_admin') echo 'ผ่านการตรวจสอบเบื้องต้น';
+                 if ($item['status']=='approved' || $item['status']=='approved_final') echo 'อนุมัติแล้ว';
+                 elseif ($item['status']=='approved_admin' || $item['status']=='verified') echo 'ผ่านการตรวจสอบเบื้องต้น';
                  elseif ($item['status']=='draft') echo 'ฉบับร่าง';
                  else echo 'รออนุมัติ';
                ?>
@@ -196,10 +181,9 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
       </div>
 
       <?php
-        // 🔥 จุดที่เพิ่ม: ส่งต่อตัวแปร $item เป็น $workload เพื่อให้ View ไฟล์ย่อยนำไปใช้ได้
         $workload = $item; 
-
         $viewFile = '';
+        
         if (isset($item['owner_role']) && $item['owner_role'] === 'staff') {
             switch ($item['main_area']) {
                 case 1: $viewFile = 'views/staff_view_routine.php'; break;
@@ -207,7 +191,13 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
                 case 3: $viewFile = 'views/staff_view_strategy.php'; break;
                 case 4: $viewFile = 'views/staff_view_assigned.php'; break; 
                 case 5: $viewFile = 'views/staff_view_activity.php'; break; 
-                case 6: $viewFile = 'views/staff_view_admin.php'; break;    
+                case 6: $viewFile = 'views/staff_view_admin.php'; break;
+                default:
+                   if ($item['main_area'] == 6) $viewFile = 'views/staff_view_routine.php';
+                   elseif ($item['main_area'] == 7) $viewFile = 'views/staff_view_strategy.php';
+                   elseif ($item['main_area'] == 8) $viewFile = 'views/staff_view_assigned.php';
+                   elseif ($item['main_area'] == 9) $viewFile = 'views/staff_view_development.php';
+                   break;
             }
         } else {
             switch ($item['main_area']) {
@@ -223,7 +213,6 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
         if (!empty($viewFile) && file_exists($viewFile)) {
             include $viewFile;
         } else {
-             // Fallback กรณีหาไฟล์ View ไม่เจอ
              echo "<div class='section-title'>รายละเอียดเพิ่มเติม</div>";
              echo "<div class='detail-value mb-4'>" . nl2br(htmlspecialchars($item['description'] ?: '-')) . "</div>";
              echo "<div class='detail-grid'><div class='detail-label'>ชั่วโมงปฏิบัติจริง</div><div class='detail-value'>" . number_format($item['actual_hours'], 2) . " ชม.</div></div>";
@@ -246,7 +235,6 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
               <a href="<?= htmlspecialchars($item['attachment_link']); ?>" target="_blank" class="btn btn-sm btn-outline text-primary" style="border-color:var(--primary);">
                 <i class="bi bi-link-45deg"></i> เปิดลิงก์เพิ่มเติม
               </a>
-              <div class="text-muted small mt-1"><?= htmlspecialchars($item['attachment_link']) ?></div>
           </div>
         <?php endif; ?>
 
@@ -256,70 +244,43 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
       </div>
 
       <hr class="mb-4">
-      <div class="grid grid-2" style="gap:40px; align-items:start;">
-          
-          <div class="timeline-section">
-              <div class="timeline-header text-primary">
-                  <i class="bi bi-patch-check"></i> ประวัติการตรวจสอบ
-              </div>
-              <div class="timeline">
-                  <?php if (count($reviewLogs) > 0): ?>
-                      <?php foreach ($reviewLogs as $log): ?>
-                          <div class="timeline-item">
-                              <div class="timeline-date"><?= date('d/m/Y H:i', strtotime($log['created_at'])); ?></div>
-                              <div class="timeline-content">
-                                  <strong><?= htmlspecialchars($log['reviewer_name'] ?? 'System') ?></strong> : 
-                                  <?php 
-                                      $act = $log['action'];
-                                      if ($act == 'approve') echo '<span class="text-success font-bold">อนุมัติ (เจ้าหน้าที่)</span>';
-                                      elseif ($act == 'approve_final') echo '<span class="text-success font-bold">อนุมัติ (ผู้บริหาร)</span>';
-                                      elseif ($act == 'reject') echo '<span class="text-danger font-bold">ส่งคืนแก้ไข</span>';
-                                  ?>
-                              </div>
-                              <?php if (!empty($log['comment'])): ?>
-                                  <div class="timeline-comment">
-                                      <i class="bi bi-chat-quote"></i> <?= nl2br(htmlspecialchars($log['comment'])); ?>
-                                  </div>
-                              <?php endif; ?>
+      
+      <div class="timeline-section">
+          <div class="text-primary font-bold mb-3"><i class="bi bi-clock-history"></i> ประวัติการดำเนินการ</div>
+          <div class="timeline">
+              <?php if (count($allLogs) > 0): ?>
+                  <?php foreach ($allLogs as $log): ?>
+                      <div class="timeline-item">
+                          <div class="timeline-date"><?= date('d/m/Y H:i', strtotime($log['created_at'])); ?></div>
+                          <div class="timeline-content">
+                              <strong><?= htmlspecialchars($log['reviewer_name'] ?? 'System') ?></strong> : 
+                              <?php 
+                                  $act = $log['action'];
+                                  if ($act == 'create') echo 'สร้างรายการ';
+                                  elseif ($act == 'update') echo 'แก้ไขข้อมูล';
+                                  elseif ($act == 'approved_admin' || $act == 'verified') echo '<span class="text-info font-bold">ผ่านการตรวจสอบขั้นต้น</span>';
+                                  elseif ($act == 'approve' || $act == 'approve_final') echo '<span class="text-success font-bold">อนุมัติแล้ว</span>';
+                                  elseif ($act == 'rejected' || $act == 'reject') echo '<span class="text-danger font-bold">ส่งคืนแก้ไข</span>';
+                                  else echo $act;
+                              ?>
                           </div>
-                      <?php endforeach; ?>
-                  <?php else: ?>
-                      <div class="text-muted small pl-4">- ยังไม่มีการตรวจสอบ -</div>
-                  <?php endif; ?>
-              </div>
-          </div>
-
-          <div class="timeline-section">
-              <div class="timeline-header text-muted">
-                  <i class="bi bi-pencil-square"></i> ประวัติการบันทึก/แก้ไข
-              </div>
-              <div class="timeline">
-                  <?php if (count($editLogs) > 0): ?>
-                      <?php foreach ($editLogs as $log): ?>
-                          <div class="timeline-item">
-                              <div class="timeline-date"><?= date('d/m/Y H:i', strtotime($log['created_at'])); ?></div>
-                              <div class="timeline-content">
-                                  <strong><?= htmlspecialchars($log['reviewer_name'] ?? 'ผู้ใช้งาน') ?></strong> : 
-                                  <?php 
-                                      if ($log['action'] == 'create') echo 'สร้างรายการ';
-                                      elseif ($log['action'] == 'update') echo 'แก้ไขข้อมูล';
-                                      else echo htmlspecialchars($log['action']);
-                                  ?>
+                          <?php if (!empty($log['comment'])): ?>
+                              <div class="timeline-comment">
+                                  <?= nl2br(htmlspecialchars($log['comment'])); ?>
                               </div>
-                          </div>
-                      <?php endforeach; ?>
-                  <?php else: ?>
-                      <div class="text-muted small pl-4">- ไม่พบประวัติ -</div>
-                  <?php endif; ?>
-              </div>
+                          <?php endif; ?>
+                      </div>
+                  <?php endforeach; ?>
+              <?php else: ?>
+                  <div class="text-muted small pl-4">- ยังไม่มีประวัติ -</div>
+              <?php endif; ?>
           </div>
-
       </div>
 
       <div class="stack-between mt-6 pt-4 border-top">
         <a href="<?= $backLink ?>" class="btn btn-muted">ย้อนกลับ</a>
         <div class="stack-right">
-          <?php if ($user['role'] === 'user' && $item['status'] !== 'approved_final'): ?>
+          <?php if ($user['role'] === 'user' && !in_array($item['status'], ['approved', 'approved_final'])): ?>
             <a href="workload_edit.php?id=<?= $item['id']; ?>" class="btn btn-primary">แก้ไข</a>
             <a href="workload_delete.php?id=<?= $item['id']; ?>" class="btn btn-danger" onclick="return confirm('ยืนยันลบ?')">ลบ</a>
           <?php endif; ?>
@@ -335,9 +296,11 @@ $areaName = $mainAreaNames[$item['main_area']] ?? 'ไม่ทราบด้�
         <h3 class="text-danger mb-4" style="border-bottom:1px solid #eee; padding-bottom:10px;">
             <i class="bi bi-exclamation-triangle"></i> เหตุผลการปฏิเสธ
         </h3>
-        <div class="p-4 bg-light rounded mb-4" style="font-size:1.1rem; line-height:1.6;">
-            <?= nl2br(htmlspecialchars($item['last_reject_comment'] ?? 'ไม่ระบุเหตุผล')) ?>
+        
+        <div class="p-4 bg-light rounded mb-4 text-break" style="font-size:1.1rem; line-height:1.6;">
+            <?= nl2br(htmlspecialchars($item['reject_reason'] ?? 'ไม่ระบุเหตุผล')) ?>
         </div>
+        
         <div class="text-right mt-4">
             <button class="btn btn-primary" onclick="closeRejectModal()">รับทราบ</button>
         </div>
