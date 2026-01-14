@@ -72,6 +72,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../medui/medui.layout.css">
     <link rel="stylesheet" href="../medui/medui.theme.medical.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        /* สไตล์สำหรับช่องใส่รหัสผ่านที่มีไอคอนตา */
+        .password-wrapper {
+            position: relative;
+        }
+        .password-wrapper input {
+            padding-right: 40px; /* เว้นที่ให้ไอคอน */
+        }
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+        .toggle-password:hover {
+            color: #0d6efd;
+        }
+    </style>
 </head>
 <body>
 
@@ -126,7 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <div class="full">
                             <label>รหัสผ่าน</label>
-                            <input type="password" name="password" required placeholder="กำหนดรหัสผ่านอย่างน้อย 4 ตัวอักษร">
+                            <div class="password-wrapper">
+                                <input type="password" name="password" id="passwordInput" required placeholder="กำหนดรหัสผ่านอย่างน้อย 4 ตัวอักษร">
+                                <i class="bi bi-eye-slash toggle-password" onclick="togglePassword('passwordInput', this)"></i>
+                            </div>
                         </div>
 
                         <div class="full">
@@ -156,6 +181,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     </div>
 </div>
+
+<script>
+    function togglePassword(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        }
+    }
+</script>
 
 </body>
 </html>
