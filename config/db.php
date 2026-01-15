@@ -3,9 +3,9 @@
 
 // ใส่ค่าตรงๆ เพื่อความชัวร์ (Bypass .env ชั่วคราว)
 $host   = '127.0.0.1';
-$user   = 'root';
-$pass   = '';
-$dbname = 'vumedhr';
+$user   = 'sql_vumedhr';
+$pass   = '964c80a74c7068';
+$dbname = 'sql_vumedhr';
 
 try {
     $conn = new mysqli($host, $user, $pass, $dbname);

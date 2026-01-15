@@ -10,13 +10,12 @@ if ($user['role'] !== 'admin') {
     exit;
 }
 
-// รับค่า (หน้า Admin บางทีใช้ workload_id บางทีใช้ id เช็คให้ครอบคลุม)
+// รับค่า
 $action = $_POST['action'] ?? '';
 $id = $_POST['workload_id'] ?? $_POST['id'] ?? ''; 
 $comment = $_POST['comment'] ?? '';
 
 if (!$id || !$action) {
-    // ถ้าหา ID ไม่เจอ ให้ลองดูว่าส่งมาจากหน้าไหน แล้วเด้งกลับไป
     header("Location: review_admin.php?error=InvalidRequest");
     exit;
 }
@@ -24,21 +23,21 @@ if (!$id || !$action) {
 $conn->begin_transaction();
 
 try {
-    // 1. Admin กดอนุมัติ (Verify) -> สถานะเป็น 'verified'
-    // หมายเหตุ: Admin ตรวจเสร็จ = Verified (รอ Manager อนุมัติ Final อีกทีตาม Flow)
+    // 1. Admin กดอนุมัติ (Verify) -> เปลี่ยนสถานะเป็น 'approved_admin'
     if ($action == 'verify') {
-        $sql = "UPDATE workload_items SET status = 'verified', updated_at = NOW() WHERE id = ?";
+        // [แก้ไข] เปลี่ยนจาก 'verified' เป็น 'approved_admin' ให้ตรงกับ DB
+        $sql = "UPDATE workload_items SET status = 'approved_admin', updated_at = NOW() WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
 
-        // Log
-        $logSql = "INSERT INTO workload_logs (work_log_id, user_id, action, comment) VALUES (?, ?, 'verified', 'ตรวจสอบแล้วโดย Admin')";
+        // Log: บันทึก action เป็น approved_admin ด้วย
+        $logSql = "INSERT INTO workload_logs (work_log_id, user_id, action, comment) VALUES (?, ?, 'approved_admin', 'ตรวจสอบแล้วโดย Admin')";
         $stmtLog = $conn->prepare($logSql);
         $stmtLog->bind_param("ii", $id, $user['id']);
         $stmtLog->execute();
 
-        $msg = "ยืนยันความถูกต้องเรียบร้อย";
+        $msg = "ยืนยันความถูกต้องเรียบร้อย (ส่งต่อให้ผู้บริหาร)";
     }
 
     // 2. Admin ส่งคืน (Reject)
@@ -48,7 +47,6 @@ try {
         $stmt->bind_param("si", $comment, $id);
         $stmt->execute();
 
-        // Log
         $logSql = "INSERT INTO workload_logs (work_log_id, user_id, action, comment) VALUES (?, ?, 'rejected', ?)";
         $stmtLog = $conn->prepare($logSql);
         $stmtLog->bind_param("iis", $id, $user['id'], $comment);
@@ -57,7 +55,7 @@ try {
         $msg = "ส่งคืนแก้ไขเรียบร้อย";
     }
     
-    // 3. (แถม) กรณีลบ (Delete)
+    // 3. ลบ (Delete)
     elseif ($action == 'delete') {
         $sql = "DELETE FROM workload_items WHERE id = ?";
         $stmt = $conn->prepare($sql);
@@ -67,7 +65,10 @@ try {
     }
 
     $conn->commit();
-    header("Location: review_admin.php?success=" . urlencode($msg));
+    
+    // [เพิ่มเติม] ส่งกลับไปที่ Tab ที่เหมาะสม
+    $redirectStatus = ($action == 'verify') ? 'approved' : (($action == 'reject') ? 'rejected' : 'pending');
+    header("Location: review_admin.php?status=$redirectStatus&success=" . urlencode($msg));
 
 } catch (Exception $e) {
     $conn->rollback();
